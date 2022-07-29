@@ -18,7 +18,7 @@ module.exports = {
         if (args.length > 1) { //member eject
             if (!message.member.permissions.has('MOVE_MEMBERS'))
                 return message.channel.send('You don\'t have the **permissions** for this :(');
-            let userId = require('./utils').getMentionId(args[1]);
+            let userId = require('../imports/utils').getMentionId(args[1]);
             if (message.guild.members.cache.has(userId)) {
                 message.guild.voiceStates.cache.get(userId).disconnect('You Got EJECTED!!!');
                 message.channel.send('. 　　　。　　　　•　 　ﾟ　　。 　　.\n'
