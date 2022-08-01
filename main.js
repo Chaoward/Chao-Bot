@@ -137,7 +137,8 @@ bot.on('messageCreate', (message) => {
         //----- secret dev commands -----
         switch (args[0]) {
             case "throw":
-                message.bdhgb();
+                let curMsg = message.channel.send("sdhhgks");
+                curMsg.then( (m) => { m.react('✅') } );
                 return;
 
 
@@ -146,17 +147,19 @@ bot.on('messageCreate', (message) => {
                 comp.push(
                     new Discord.MessageActionRow()
                         .addComponents(
-                                new Discord.MessageButton()
-                                    .setCustomId("1")
-                                    .setLabel("1")
-                                    .setStyle("SECONDARY")
+                            new Discord.MessageButton()
+                                .setCustomId("1")
+                                .setLabel("1")
+                                .setStyle("SECONDARY")
                         )
                 );
 
-                message.channel.send({ embeds: [
-                    new Discord.MessageEmbed({ description: "\0", color: 0x123456 })
-                ],
-                 components: comp });
+                message.channel.send({
+                    embeds: [
+                        new Discord.MessageEmbed({ description: "\0", color: 0x123456 })
+                    ],
+                    components: comp
+                });
                 return;
 
             case 'help':
@@ -253,15 +256,34 @@ bot.on('messageCreate', (message) => {
 bot.on("interactionCreate", (interaction) => {
     //util.debugLog("Event Called");
     if (interaction.client.user.id !== bot.user.id) return util.debugLog("No ID Match!");
-    if (interaction.message.embeds == undefined) return util.debugLog("No Embeds");
+
     try {
         // button interaction
-        if (interaction.isButton()) {
+        if (interaction.isButton() && interaction.message.embeds !== undefined) {
             switch (interaction.message.embeds[0].color) {
                 case 0x2828f7: //calculator
                     //util.debugLog("calling");
                     bot.commands.get("calculator").interact(interaction, bot);
                     break;
+
+                case 0xf58484: //VC kick
+                    bot.commands.get("vckick").interact(interaction, bot);
+                    break;
+
+                case 0x15f00a: //newcoin
+                    bot.commands.get("newcoin").interact(interaction, bot);
+                    break;
+
+                case 0x15f00b: //setchannel
+                    bot.commands.get("setchannel").interact(interaction, bot);
+                    break;
+
+                case 0xff3c19: //leavecrypto
+                    bot.commands.get("leavecrypto").interact(interaction, bot);
+                    break;
+
+                default:
+                    util.debugLog("No Color Code Match!");
             }
         }
     }
@@ -270,6 +292,34 @@ bot.on("interactionCreate", (interaction) => {
     }
 })
 //===== *END* Interaction Event *END* =========================================================
+
+
+
+//===== Reaction Event ========================================================================
+bot.on("messageReactionAdd", (reaction, user) => {
+    msgReaction(reaction, user, true);
+});
+
+bot.on("messageReactionRemove", (reaction, user) => {
+    
+    msgReaction(reaction, user, false);
+});
+
+function msgReaction(reaction, user, isAdd) {
+    if (user.bot) return;
+    try {
+        //embed color
+        switch (reaction.message.embeds[0].color) {
+            case 0xf58484:
+                bot.commands.get("vckick").react(reaction, user, isAdd, bot);
+                break;
+        }
+    }
+    catch (error) {
+        util.errorLog(error);
+    }
+}
+//===== *END* Reaction Event *END* ============================================================
 
 
 
@@ -286,6 +336,18 @@ bot.on('voiceStateUpdate', (oldUser, newUser) => {
     //when a new user joins
     if (oldStateChannel === null || oldStateChannel === undefined) {
         logMessage += newUser.member.user.tag + ' has JOINED \"' + newStateChannel.name + '\"';
+        
+        //----- VC kick check ----------------
+        let id = String(newUser.id)
+        if (bot.vckick[id] !== undefined) {
+            if (bot.vckick[id]["kick"]) {
+                newUser.member.voice.disconnect();
+                newStateChannel.send(newUser.member.toString() + " you CAN NOT ESCAPE the VcKick!");
+                delete bot.vckick[id];
+            }
+        }
+        //------------------------------------
+
     } //when a user leaves the channel
     else if (newStateChannel === null || newStateChannel === undefined) {
         logMessage += oldUser.member.user.tag + ' has LEFT \"' + oldStateChannel.name + '\"';
