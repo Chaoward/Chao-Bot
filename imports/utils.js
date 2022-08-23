@@ -136,8 +136,8 @@ module.exports = {
     //===== errorLog ================================================
     /* Logs and archives errors thrown. Use in catch block. */
     //===============================================================
-    errorLog: function (error) {
-        console.error("[ERROR] " + error.name + ": " + error.message);
+    errorLog: function (error, type) {
+        console.error("[ERROR" + (type == undefined ? "" : "/" + type) + "] " + error.name + ": " + error.message);
         let date = new Date();
         let path = "./data/logs/_ERROR " + date.toDateString() + ".txt";
         fs.appendFileSync(path,
@@ -154,10 +154,15 @@ module.exports = {
     getMentionId: function (string) {
         if (!String(string).startsWith('<') && !String(string).endsWith('>')) return undefined;
 
+        while ( isNaN( Number(string.charAt(0)) ) )   //removes chars up to the first digit
+            string = string.substr(1);
+        return string.split(">")[0];
+
+        /*
         string = string.substr(2);
         if (string.startsWith('!'))     //Note: server nicknames adds a '!' to the string
             string = string.substr(1);  //removes the '!'
-        return string.split('>')[0];
+        return string.split('>')[0];*/
     },
 
     //===== mudaeNotify ============================

@@ -1,13 +1,11 @@
 //embed color = #2828f7
 
-const { stat } = require("fs");
-
 module.exports = {
     name: "calculator",
     description: "Sends a calculator embed and numpad.",
     alias: ["cal"],
     help: { //message json data
-        content: "Just use it like a normal calculator. WIP"
+        content: "Just use it like a normal calculator."
     },
     category: "utility",
     execute(message, args, bot) {

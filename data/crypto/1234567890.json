@@ -1,0 +1,23 @@
+{
+    "coins": 20,
+    "currencies": [
+        {
+            "name": "MeMe Coin",
+            "amount": 1
+        }
+    ],
+    "created_currencies": [
+        {
+            "name": "MeMe Coin",
+            "id": "12345"
+        }
+    ],
+    "meta": {
+        "dailyDate": [
+            2022,
+            7,
+            2
+        ],
+        "dailyAmount": 10
+    }
+}

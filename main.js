@@ -24,7 +24,7 @@ const bot = new Discord.Client({
     ]
 });
 const inviteLink = "https://discordapp.com/oauth2/authorize?client_id=703155963456389181&scope=bot&permissions=1497824368";
-const PREFIX = '+';
+const PREFIX = String(fs.readFileSync("./data/MAIN_PREFIX.txt"));
 const crashPassword = new util.code;
 const helpMenu = []; //MessageEmbed[]
 
@@ -138,20 +138,54 @@ bot.on('messageCreate', (message) => {
         switch (args[0]) {
             case "throw":
                 let curMsg = message.channel.send("sdhhgks");
-                curMsg.then( (m) => { m.react('✅') } );
+                curMsg.then((m) => { m.react('✅') });
                 return;
 
 
             case 'test':
                 let comp = [];
                 comp.push(
-                    new Discord.MessageActionRow()
-                        .addComponents(
-                            new Discord.MessageButton()
-                                .setCustomId("1")
-                                .setLabel("1")
-                                .setStyle("SECONDARY")
-                        )
+                    {
+                        "type": 1,
+                        "components": [
+                            {
+                                "type": 3,
+                                "custom_id": "class_select_1",
+                                "options": [
+                                    {
+                                        "label": "Rogue",
+                                        "value": "rogue",
+                                        "description": "Sneak n stab",
+                                        "emoji": {
+                                            "name": "rogue",
+                                            "id": "625891304148303894"
+                                        }
+                                    },
+                                    {
+                                        "label": "Mage",
+                                        "value": "mage",
+                                        "description": "Turn 'em into a sheep",
+                                        "emoji": {
+                                            "name": "mage",
+                                            "id": "625891304081063986"
+                                        }
+                                    },
+                                    {
+                                        "label": "Priest",
+                                        "value": "priest",
+                                        "description": "You get heals when I'm done doing damage",
+                                        "emoji": {
+                                            "name": "priest",
+                                            "id": "625891303795982337"
+                                        }
+                                    }
+                                ],
+                                "placeholder": "Choose a class",
+                                "min_values": 1,
+                                "max_values": 1
+                            }
+                        ]
+                    }
                 );
 
                 message.channel.send({
@@ -170,12 +204,13 @@ bot.on('messageCreate', (message) => {
                     const cmd = bot.commands.get(args[1]);
                     if (cmd === undefined)
                         return message.channel.send('Unknown command');
-                    else if (cmd.help === undefined)
+                    else if (cmd.help == undefined)
                         return message.channel.send('No help available for this command');
                     return message.channel.send(cmd.help);
                 }
                 //default help menu
-                helpMenu[0].setDescription("Prefix: " + PREFIX
+                helpMenu[0].setDescription("Invite Link: " + inviteLink + "\n"
+                    + "Prefix: " + PREFIX
                     + (message.channel.type === 'DM' ? '' : ', Server alias: ' + bot.prefixes.get(message.guild.id)));
                 message.channel.send({ embeds: helpMenu });
                 return;
@@ -274,6 +309,11 @@ bot.on("interactionCreate", (interaction) => {
                     bot.commands.get("newcoin").interact(interaction, bot);
                     break;
 
+                case 0x096e08:
+                case 0xeb3434: //logchannel
+                    bot.commands.get("logchannel").interact(interaction, bot);
+                    break;
+
                 case 0x15f00b: //setchannel
                     bot.commands.get("setchannel").interact(interaction, bot);
                     break;
@@ -281,6 +321,7 @@ bot.on("interactionCreate", (interaction) => {
                 case 0xff3c19: //leavecrypto
                     bot.commands.get("leavecrypto").interact(interaction, bot);
                     break;
+
 
                 default:
                     util.debugLog("No Color Code Match!");
@@ -301,12 +342,11 @@ bot.on("messageReactionAdd", (reaction, user) => {
 });
 
 bot.on("messageReactionRemove", (reaction, user) => {
-    
     msgReaction(reaction, user, false);
 });
 
 function msgReaction(reaction, user, isAdd) {
-    if (user.bot) return;
+    if (user.bot || reaction.message.embeds.length < 1) return;
     try {
         //embed color
         switch (reaction.message.embeds[0].color) {
@@ -336,7 +376,7 @@ bot.on('voiceStateUpdate', (oldUser, newUser) => {
     //when a new user joins
     if (oldStateChannel === null || oldStateChannel === undefined) {
         logMessage += newUser.member.user.tag + ' has JOINED \"' + newStateChannel.name + '\"';
-        
+
         //----- VC kick check ----------------
         let id = String(newUser.id)
         if (bot.vckick[id] !== undefined) {
@@ -379,6 +419,7 @@ bot.on('voiceStateUpdate', (oldUser, newUser) => {
     util.archiveLog(logMessage);
 });
 //===== *END* VoiceState Event *END* ==========================================================
+
 
 
 //===== Edit Message Event ====================================================================
@@ -493,6 +534,7 @@ function save(type) {
 
 
 bot.once('ready', () => {
+    console.clear();
     let curDate = new Date();
     //curLogPath += curDate.toDateString() + ' ' + curDate.toLocaleTimeString();
     console.log('Bot-' + require('./package.json').version + ' is Online!\n'
@@ -509,8 +551,9 @@ bot.once('ready', () => {
         .setThumbnail('https://cdn.discordapp.com/attachments/704921980507521136/733887421091151932/benson.png')
         .setColor('#0099ff')
         .setTitle("ChaoBot of Domination")
-        .setDescription("Prefix: " + PREFIX + ", server alias: "    //alias added when cmd triggers
-            + "\n Invite Link: " + inviteLink)
+        .setDescription("Invite Link: " + inviteLink + "\n"
+            + "Prefix: " + PREFIX + ", server alias: "    //alias added when cmd triggers
+        )
     );
 
     //sorting cmds into their categories
